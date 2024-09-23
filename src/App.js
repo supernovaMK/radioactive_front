@@ -1,50 +1,4 @@
-// import React, { useState } from 'react';
-// import ImageUpload from './components/ImageUpload';
-// import ImageDisplay from './components/ImageDisplay';
-// import AnalysisResult from './components/AnalysisResult';
-// import './styles/App.css';
 
-// function App() {
-//   const [image, setImage] = useState(null);
-//   const [analysis, setAnalysis] = useState([]);
-
-//   const handleImageUpload = async (uploadedImage) => {
-//     setImage(uploadedImage);
-
-//     try {
-//       const response = await fetch('/analyze', {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json',
-//         },
-//         body: JSON.stringify({ image: uploadedImage }),
-//       });
-
-//       if (!response.ok) {
-//         throw new Error('Network response was not ok');
-//       }
-
-//       const data = await response.json();
-//       setAnalysis(data);
-//     } catch (error) {
-//       console.error('Error:', error);
-//       setAnalysis([]);
-//     }
-//   };
-
-//   return (
-//     <div className="App">
-//       <div className="title-container">
-//         <h1>방사선 GO</h1>
-//       </div>
-//       <ImageUpload onImageUpload={handleImageUpload} />
-//       <ImageDisplay image={image} />
-//       <AnalysisResult analysis={analysis} />
-//     </div>
-//   );
-// }
-
-// export default App;
 
 import React, { useState } from 'react';
 import ImageUpload from './components/ImageUpload';
@@ -58,7 +12,6 @@ function App() {
   const [image, setImage] = useState(null);
   const [analysis, setAnalysis] = useState([]);
 
-  // 임시 데이터 설정
   const tempAnalysisData = [
     { name: 'Category 1', percentage: '85' },
     { name: 'Category 2', percentage: '15' }
@@ -66,21 +19,53 @@ function App() {
 
   const handleImageUpload = async (uploadedImage) => {
     setImage(uploadedImage);
-
-    // 임시 데이터로 상태 업데이트 (실제 백엔드 연결 전 테스트 용)
     setAnalysis(tempAnalysisData);
+    scrollToDownContainer();
+  };
+
+  const scrollToDownContainer = () => {
+    const downContainer = document.getElementById('down-container');
+    if (downContainer) {
+      const targetPosition = downContainer.getBoundingClientRect().top + window.pageYOffset;
+      smoothScrollTo(targetPosition, 6000); // 1000ms 동안 스크롤
+    }
+  };
+
+  const smoothScrollTo = (target, duration) => {
+    const start = window.pageYOffset;
+    const distance = target - start;
+    const startTime = performance.now();
+
+    const animation = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1); // 0에서 1로 진행 상황을 제한
+      const easing = easeInOutQuad(progress); // easing 함수 적용
+      window.scrollTo(0, start + distance * easing); // 스크롤 위치 업데이트
+
+      if (progress < 1) {
+        requestAnimationFrame(animation); // 애니메이션 프레임 요청
+      }
+    };
+
+    requestAnimationFrame(animation); // 애니메이션 시작
+  };
+
+  const easeInOutQuad = (t) => {
+    return t < 0.5 ? 2 * t * t : -1 + (4 * t) - (2 * t * t); // easing 함수
   };
 
   return (
     <div className="App">
-      <div className="left-container">
-        <h1>방사선 GO</h1>
+      <div className="top-container" style={{ height: '100vh' }}>
+        <h1>방사선</h1>
         <ImageUpload onImageUpload={handleImageUpload} />
         <ImageDisplay image={image} />
-        
+        <h1 className="left-aligned">우리는 사진에 관한 객체들의 방사선에 대한 정보와</h1>
+        <h1 className="left-aligned">관련된 추가적인 뉴스들을 알려드립니다.</h1>
       </div>
-      <div className="right-container">
-      <AnalysisResult analysis={analysis} />
+      <div id="down-container" className="down-container" style={{ height: '100vh', background: '#f0f0f0' }}>
+        <ImageDisplay image={image} />
+        <AnalysisResult analysis={analysis} />
       </div>
     </div>
   );
